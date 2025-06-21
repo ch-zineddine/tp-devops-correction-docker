@@ -2,42 +2,58 @@ name: CI/CD pipeline
 
 on:
   push:
-    branches: [ main, develop ]  # Trigger on pushes to these branches
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]           # Optional: run CI/CD on PRs to main
+    branches: [ main ]
 
-build-and-push-docker-image:
-  needs: test-backend
-  runs-on: ubuntu-24.04
-  if: success()  # Run only if previous job passed
+jobs:
+  test-backend:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and test with Maven
+        run: cd simple-api && mvn clean verify
 
-    - name: Build and push backend image
-      uses: docker/build-push-action@v6
-      with:
-        context: ./simple-api  # Path to backend Dockerfile
-        push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/tp-devops-simple-api:latest
+  build-and-push-docker-image:
+    needs: test-backend
+    runs-on: ubuntu-24.04
+    if: success()
 
-    - name: Build and push database image
-      uses: docker/build-push-action@v6
-      with:
-        context: ./database  # Update this if the path differs
-        push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/tp-devops-database:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Build and push httpd image
-      uses: docker/build-push-action@v6
-      with:
-        context: ./httpd  # Update this if the path differs
-        push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/tp-devops-httpd:latest
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./simple-api
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-simple-api:latest
+
+      - name: Build and push database image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./database
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-database:latest
+
+      - name: Build and push httpd image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./httpd
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-httpd:latest
