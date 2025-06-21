@@ -44,16 +44,9 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/tp-devops-simple-api:latest
 
-      - name: Build and push database image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./database
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/tp-devops-database:latest
-
       - name: Build and push httpd image
         uses: docker/build-push-action@v6
         with:
-          context: ./httpd
+          context: ./http-server
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/tp-devops-httpd:latest
