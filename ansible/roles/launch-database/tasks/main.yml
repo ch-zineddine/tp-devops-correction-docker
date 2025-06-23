@@ -1,0 +1,14 @@
+---
+- name: Run database container
+  docker_container:
+    name: my_database
+    image: zineddinech7/tp-devops-database:latest
+    state: started
+    restart_policy: always
+    env:
+      POSTGRES_PASSWORD: pwd
+    volumes:
+      - db-volume:/var/lib/postgresql/data
+    networks:
+      - name: app-network
+    

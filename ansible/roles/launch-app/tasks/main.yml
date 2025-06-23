@@ -1,0 +1,12 @@
+---
+- name: Run simple-api container
+  docker_container:
+    name: simple-api
+    image: zineddinech7/tp-devops-simple-api:latest
+    state: started
+    restart_policy: always
+    env:
+      DATABASE_HOST: my_database
+      DATABASE_PASSWORD: pwd
+    networks:
+      - name: app-network

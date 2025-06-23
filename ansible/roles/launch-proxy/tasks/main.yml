@@ -1,0 +1,11 @@
+---
+- name: Run proxy container
+  docker_container:
+    name: my_proxy
+    image: zineddinech7/tp-devops-httpd:latest
+    state: started
+    restart_policy: always
+    ports:
+      - "80:80"
+    networks:
+      - name: app-network
